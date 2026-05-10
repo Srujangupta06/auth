@@ -17,7 +17,6 @@ export class User {
     type: String,
     trim: true,
     required: true,
-    allowNull: false,
   })
   lastName: string;
 
@@ -25,7 +24,6 @@ export class User {
     type: String,
     trim: true,
     required: true,
-    allowNull: false,
     unique:true,
     lowercase:true,
     index:true,

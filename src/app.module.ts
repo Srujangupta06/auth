@@ -21,10 +21,9 @@ import { MongooseModule } from '@nestjs/mongoose';
             console.log('DB CONNECTION: DISCONNECTED');
           });
 
-          conn.on('error', (err: string) => { 
+          conn.on('error', (err: string) => {
             console.log('DB CONNECTION: ERROR', err);
           });
-
           return conn;
         },
       }),
