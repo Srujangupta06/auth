@@ -12,6 +12,13 @@ import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login.dto';
 import { Response } from 'express';
+import { userRole } from '@/user/enum/user.enum';
+
+interface tokenPayload {
+  sub: string;
+  role: userRole;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -38,7 +45,7 @@ export class AuthService {
       sub: loginUser.email,
       role: exisitingUser.role,
     };
-    const accessToken = await this.jwtService.signAsync(payload);
+    const accessToken = await this.generateJwtToken(payload);
     res.cookie('accessToken', accessToken);
     // 5. Return the token to the client
     return {
@@ -74,7 +81,7 @@ export class AuthService {
         role: user.role,
       };
 
-      const accessToken = await this.jwtService.signAsync(payload);
+      const accessToken = await this.generateJwtToken(payload);
       res.cookie('accessToken', accessToken);
       // 5. Return response
       return {
@@ -104,5 +111,9 @@ export class AuthService {
     res.clearCookie('accessToken');
     // 2. Clear the client-side token (if using cookies)
     return 'User Logged out Successfully';
+  }
+
+  private async generateJwtToken(payload: tokenPayload) {
+    return await this.jwtService.signAsync(payload);
   }
 }
