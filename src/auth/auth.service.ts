@@ -1,13 +1,16 @@
 import { UserService } from '@/user/user.service';
 import {
+  BadRequestException,
   ConflictException,
   HttpException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegisterUserDto } from './dto/registerUser.dto';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { LoginUserDto } from './dto/login.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -15,13 +18,32 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  login() {
-    // 1. Validate the Body
+  async login(loginUser: LoginUserDto) {
     // 2. Check if the user exists
+    const exisitingUser = await this.userService.fetchUser(loginUser.email);
+    if (!exisitingUser) {
+      throw new NotFoundException('Please Register First');
+    }
     // 3. Verify the password
+    const isPasswordMatched = await bcrypt.compare(
+      loginUser.password,
+      exisitingUser.password,
+    );
+    if (!isPasswordMatched) {
+      throw new BadRequestException('Incorrect Password');
+    }
     // 4. Generate a JWT token
+    const payload = {
+      sub: loginUser.email,
+    };
+    const accessToken = await this.jwtService.signAsync(payload);
     // 5. Return the token to the client
-    return 'User Logged in Successfully';
+    return {
+      data: {
+        accessToken,
+        message: 'User Logged in Successfully',
+      },
+    };
   }
 
   async register(registerUser: RegisterUserDto) {
@@ -49,12 +71,12 @@ export class AuthService {
         sub: registerUser.email,
       };
 
-      const token = await this.jwtService.signAsync(payload);
+      const accessToken = await this.jwtService.signAsync(payload);
 
       // 5. Return response
       return {
         data: {
-          token,
+          accessToken,
         },
         message: 'User Registered Successfully',
       };
