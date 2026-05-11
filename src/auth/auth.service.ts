@@ -11,6 +11,7 @@ import { RegisterUserDto } from './dto/registerUser.dto';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login.dto';
+import { Response } from 'express';
 @Injectable()
 export class AuthService {
   constructor(
@@ -18,7 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(loginUser: LoginUserDto) {
+  async login(loginUser: LoginUserDto, res: Response) {
     // 2. Check if the user exists
     const exisitingUser = await this.userService.fetchUser(loginUser.email);
     if (!exisitingUser) {
@@ -35,18 +36,19 @@ export class AuthService {
     // 4. Generate a JWT token
     const payload = {
       sub: loginUser.email,
+      role: exisitingUser.role,
     };
     const accessToken = await this.jwtService.signAsync(payload);
+    res.cookie('accessToken', accessToken);
     // 5. Return the token to the client
     return {
       data: {
-        accessToken,
         message: 'User Logged in Successfully',
       },
     };
   }
 
-  async register(registerUser: RegisterUserDto) {
+  async register(registerUser: RegisterUserDto, res: Response) {
     try {
       // 1. Check existing user
       const existingUser = await this.userService.fetchUser(registerUser.email);
@@ -69,15 +71,13 @@ export class AuthService {
       // 4. Generate token
       const payload = {
         sub: registerUser.email,
+        role: user.role,
       };
 
       const accessToken = await this.jwtService.signAsync(payload);
-
+      res.cookie('accessToken', accessToken);
       // 5. Return response
       return {
-        data: {
-          accessToken,
-        },
         message: 'User Registered Successfully',
       };
     } catch (err: any) {
@@ -99,8 +99,9 @@ export class AuthService {
     }
   }
 
-  logout() {
+  logout(res: Response) {
     // 1. Invalidate the JWT token (if using a token blacklist)
+    res.clearCookie('accessToken');
     // 2. Clear the client-side token (if using cookies)
     return 'User Logged out Successfully';
   }
