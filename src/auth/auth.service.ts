@@ -28,9 +28,11 @@ export class AuthService {
 
   async login(loginUser: LoginUserDto, res: Response) {
     // 2. Check if the user exists
-    
-    const exisitingUser = await this.getExistingUserWithPassword(loginUser.email);
-    
+
+    const exisitingUser = await this.getExistingUserWithPassword(
+      loginUser.email,
+    );
+
     if (!exisitingUser) {
       throw new NotFoundException('Please Register First');
     }
@@ -60,7 +62,9 @@ export class AuthService {
   async register(registerUser: RegisterUserDto, res: Response) {
     try {
       // 1. Check existing user
-      const existingUser = await this.getExistingUserWithPassword(registerUser.email);
+      const existingUser = await this.getExistingUserWithPassword(
+        registerUser.email,
+      );
 
       if (existingUser) {
         throw new ConflictException('User already exists');
@@ -119,9 +123,9 @@ export class AuthService {
     return await this.jwtService.signAsync(payload);
   }
 
-  private async getExistingUserWithPassword(email:string){
-    return await this.userService.fetchUser(email,{
-      includePassword:true
+  private async getExistingUserWithPassword(email: string) {
+    return await this.userService.fetchUserByEmail(email, {
+      includePassword: true,
     });
   }
 }

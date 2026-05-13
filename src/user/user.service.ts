@@ -8,7 +8,7 @@ import { Model } from 'mongoose';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async fetchUser(
+  async fetchUserByEmail(
     email: string,
     options?: {
       includePassword?: boolean;

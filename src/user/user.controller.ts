@@ -13,6 +13,6 @@ export class UserController {
   @Get('profile')
   async fetchUser(@Request() req) {
     const userEmail:string = req.user.sub;
-    return await this.userService.fetchUser(userEmail);
+    return await this.userService.fetchUserByEmail(userEmail);
   }
 }
