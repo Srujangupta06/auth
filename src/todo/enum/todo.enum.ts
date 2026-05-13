@@ -1,11 +1,11 @@
 export enum todoStatus {
-  TODO = 'todo',
-  INPROGRESS = 'in-progress',
-  COMPLETED = 'completed',
+  TODO = 'TODO',
+  INPROGRESS = 'IN-PROGRESS',
+  COMPLETED = 'COMPLETED',
 }
 
 export enum todoPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
 }

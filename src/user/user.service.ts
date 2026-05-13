@@ -1,5 +1,5 @@
 import { RegisterUserDto } from '@/auth/dto/registerUser.dto';
-import { Get, Injectable, Post } from '@nestjs/common';
+import { Injectable, NotFoundException, Post } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schema/user.schema';
 import { Model } from 'mongoose';
@@ -14,11 +14,14 @@ export class UserService {
       includePassword?: boolean;
     },
   ) {
-    const query = this.userModel.findOne({ email });
-    if (options?.includePassword) {
-      return query.select('+password');
+    const existingUser = this.userModel.findOne({ email });
+    if (!existingUser) {
+      throw new NotFoundException('User Not Found');
     }
-    return query.select('-__v');
+    if (options?.includePassword) {
+      return existingUser.select('+password');
+    }
+    return existingUser.select('-__v');
   }
 
   async create(user: RegisterUserDto) {

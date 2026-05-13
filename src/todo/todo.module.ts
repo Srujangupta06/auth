@@ -7,9 +7,7 @@ import { UserModule } from '@/user/user.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Todo.name, schema: TodoSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Todo.name, schema: TodoSchema }]),
     UserModule,
   ],
   controllers: [TodoController],

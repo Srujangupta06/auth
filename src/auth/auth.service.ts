@@ -13,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login.dto';
 import { Response } from 'express';
 import { userRole } from '@/user/enum/user.enum';
-
+import { Logger } from '@nestjs/common';
 interface tokenPayload {
   sub: string;
   role: userRole;
@@ -21,6 +21,7 @@ interface tokenPayload {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
@@ -62,17 +63,34 @@ export class AuthService {
   async register(registerUser: RegisterUserDto, res: Response) {
     try {
       // 1. Check existing user
+      this.logger.log(
+        JSON.stringify({
+          event: 'INCOMING USER',
+          email: registerUser.email,
+        }),
+      );
       const existingUser = await this.getExistingUserWithPassword(
         registerUser.email,
       );
 
       if (existingUser) {
+        this.logger.warn(
+          JSON.stringify({
+            event: 'USER ALREADY EXISTS',
+            email: registerUser.email,
+          }),
+        );
         throw new ConflictException('User already exists');
       }
 
       // 2. Hash password
       const hashedPassword = await bcrypt.hash(registerUser.password, 10);
-
+      this.logger.log(
+        JSON.stringify({
+          event: 'PASSWORD HASHED',
+          email: registerUser.email,
+        }),
+      );
       const user = {
         ...registerUser,
         password: hashedPassword,
@@ -80,7 +98,12 @@ export class AuthService {
 
       // 3. Save user
       await this.userService.create(user);
-
+      this.logger.log(
+        JSON.stringify({
+          event: 'USER CREATED SUCCESSFULLY',
+          email: registerUser.email,
+        }),
+      );
       // 4. Generate token
       const payload = {
         sub: registerUser.email,
@@ -89,6 +112,13 @@ export class AuthService {
 
       const accessToken = await this.generateJwtToken(payload);
       res.cookie('accessToken', accessToken);
+      this.logger.log(
+        JSON.stringify({
+          event: 'TOKEN SENT IN COOKIE',
+          email: registerUser.email,
+          token: accessToken,
+        }),
+      );
       // 5. Return response
       return {
         message: 'User Registered Successfully',

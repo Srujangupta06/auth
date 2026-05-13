@@ -17,11 +17,14 @@ export class CreateTodoDto {
   @MinLength(minTodoTitleLength, {
     message: `Min chars :${minTodoTitleLength} is Required`,
   })
+  @MaxLength(maxTodoTitleLength, {
+    message: `Max chars :${maxTodoTitleLength} is Required`,
+  })
   title: string;
 
   @IsString()
   @IsOptional()
-  @MaxLength(50, {
+  @MaxLength(maxTodoDescriptionLength, {
     message: `description Max Length ${maxTodoDescriptionLength} exceeded`,
   })
   description: string;
