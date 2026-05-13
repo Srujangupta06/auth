@@ -1,5 +1,5 @@
 import {
-    IsDateString,
+  IsDateString,
   IsEnum,
   IsOptional,
   IsString,
@@ -7,22 +7,22 @@ import {
   MinLength,
 } from 'class-validator';
 import { todoPriority, todoStatus } from '../enum/todo.enum';
+import { TODO_CONSTRAINTS } from '../utils/todo.utils';
 
-const MIN_LENGTH = 8;
-const MAX_DESC_LENGTH = 50;
-
+const minTodoTitleLength = TODO_CONSTRAINTS.TITLE.MIN_LENGTH;
+const maxTodoTitleLength = TODO_CONSTRAINTS.TITLE.MAX_LENGTH;
+const maxTodoDescriptionLength = TODO_CONSTRAINTS.DESCRIPTION.MAX_LENGTH;
 export class CreateTodoDto {
-
   @IsString()
-  @MinLength(MIN_LENGTH, {
-    message: `Min chars :${MIN_LENGTH} is Required`,
+  @MinLength(minTodoTitleLength, {
+    message: `Min chars :${minTodoTitleLength} is Required`,
   })
   title: string;
 
   @IsString()
   @IsOptional()
   @MaxLength(50, {
-    message: `description Max Length ${MAX_DESC_LENGTH} exceeded`,
+    message: `description Max Length ${maxTodoDescriptionLength} exceeded`,
   })
   description: string;
 
@@ -35,7 +35,4 @@ export class CreateTodoDto {
     message: 'Invalid Todo Priority',
   })
   priority: todoPriority = todoPriority.HIGH;
-
-  @IsDateString()
-  estimationDate: string;
 }

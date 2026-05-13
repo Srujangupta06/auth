@@ -8,8 +8,17 @@ import { Model } from 'mongoose';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async fetchUser(email: string) {
-    return await this.userModel.findOne({ email }).select('-__v');
+  async fetchUser(
+    email: string,
+    options?: {
+      includePassword?: boolean;
+    },
+  ) {
+    const query = this.userModel.findOne({ email });
+    if (options?.includePassword) {
+      return query.select('+password');
+    }
+    return query.select('-__v');
   }
 
   async create(user: RegisterUserDto) {

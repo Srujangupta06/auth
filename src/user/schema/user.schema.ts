@@ -36,6 +36,7 @@ export class User {
     type:String,
     minLength:8,
     trim:true,
+    select:false
   })
   password: string;
 
