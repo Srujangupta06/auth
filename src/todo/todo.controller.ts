@@ -39,8 +39,8 @@ export class TodoController {
   }
 
   @Patch('edit/:id')
-  update(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
-    return this.todoService.update(+id, updateTodoDto);
+  update(@Req() req,@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
+    return this.todoService.update(id, updateTodoDto,req.user);
   }
 
   @HttpCode(204)

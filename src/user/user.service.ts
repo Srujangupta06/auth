@@ -27,4 +27,20 @@ export class UserService {
   async create(user: RegisterUserDto) {
     return await this.userModel.create(user);
   }
+
+  async updateUser(updateUserDto, user) {
+    const updatedUser = await this.userModel.findOneAndUpdate(
+      {
+        email: user.sub,
+      },
+      updateUserDto,
+      {
+        new: true,
+      },
+    ).select('-__v');
+    return {
+      message: 'User Updated Successfully',
+      data: updatedUser,
+    };
+  }
 }

@@ -47,18 +47,25 @@ export class TodoService {
     };
   }
 
-  update(id: number, updateTodoDto: UpdateTodoDto) {
-    return `This action updates a #${id} todo`;
+  async update(id: string, updateTodoDto: UpdateTodoDto, user: any) {
+    const existingTodo = await this.findOne(id);
+    await this.userService.fetchUserByEmail(user?.sub);
+    await this.todoModel.findByIdAndUpdate(
+      existingTodo?.data?._id,
+      updateTodoDto,
+    );
+    return {
+      message: 'Todo Updated Successfully',
+    };
   }
 
   async remove(id: string, user: any) {
     const exisitingUser = await this.userService.fetchUserByEmail(user?.sub);
     const existingTodo = await this.findOne(id);
-    await this.todoModel
-      .findOneAndDelete({
-        _id: existingTodo?.data?._id,
-        ownerId: exisitingUser?._id,
-      })
+    await this.todoModel.findOneAndDelete({
+      _id: existingTodo?.data?._id,
+      ownerId: exisitingUser?._id,
+    });
     return {
       data: 'Todo Removed Successfully',
     };

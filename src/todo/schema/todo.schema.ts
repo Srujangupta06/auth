@@ -6,7 +6,9 @@ import { User } from '@/user/schema/user.schema';
 
 export type TodoDocument = HydratedDocument<Todo>;
 
-@Schema()
+@Schema({
+  timestamps: true,
+})
 export class Todo {
   @Prop({
     isRequired: true,
