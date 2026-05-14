@@ -54,9 +54,8 @@ export class AuthService {
     res.cookie('accessToken', accessToken);
     // 5. Return the token to the client
     return {
-      data: {
-        message: 'User Logged in Successfully',
-      },
+      message: 'User Logged in Successfully',
+      data: { accessToken },
     };
   }
 
@@ -122,6 +121,9 @@ export class AuthService {
       // 5. Return response
       return {
         message: 'User Registered Successfully',
+        data: {
+          accessToken,
+        },
       };
     } catch (err: any) {
       // Re-throw existing NestJS exceptions
