@@ -18,13 +18,15 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
-    if (!token) {
+    const tokenFromCookie = request.cookies?.accessToken;
+    const isTokenExists = token || tokenFromCookie;
+    if (!isTokenExists) {
       throw new UnauthorizedException();
     }
     try {
       // 💡 Here the JWT secret key that's used for verifying the payload
       // is the key that was passed in the JwtModule
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload = await this.jwtService.verifyAsync(isTokenExists, {
         secret: this.configService.get<string>('JWT_SECRET_KEY'),
       });
       // 💡 We're assigning the payload to the request object here
