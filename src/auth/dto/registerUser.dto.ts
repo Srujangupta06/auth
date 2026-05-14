@@ -36,5 +36,5 @@ export class RegisterUserDto {
   @IsEnum(userAccountStatus,{
     message:'Invalid Account Status'
   })
-  acountStatus: userAccountStatus = userAccountStatus.ACTIVE
+  accountStatus: userAccountStatus = userAccountStatus.ACTIVE
 }
