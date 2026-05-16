@@ -14,10 +14,7 @@ import { LoginUserDto } from './dto/login.dto';
 import { Response } from 'express';
 import { userRole } from '@/user/enum/user.enum';
 import { Logger } from '@nestjs/common';
-interface tokenPayload {
-  sub: string;
-  role: userRole;
-}
+import { tokenPayload } from '@/shared/interface/interface';
 
 @Injectable()
 export class AuthService {
@@ -46,9 +43,9 @@ export class AuthService {
       throw new BadRequestException('Incorrect Password');
     }
     // 4. Generate a JWT token
-    const payload = {
-      sub: loginUser.email,
-      role: exisitingUser.role,
+    const payload: tokenPayload = {
+      sub: exisitingUser?._id.toString(),
+      role: exisitingUser?.role,
     };
     const accessToken = await this.generateJwtToken(payload);
     res.cookie('accessToken', accessToken);
@@ -60,64 +57,32 @@ export class AuthService {
   }
 
   async register(registerUser: RegisterUserDto, res: Response) {
-    try {
       // 1. Check existing user
-      this.logger.log(
-        JSON.stringify({
-          event: 'INCOMING USER',
-          email: registerUser.email,
-        }),
-      );
       const existingUser = await this.getExistingUserWithPassword(
         registerUser.email,
       );
 
       if (existingUser) {
-        this.logger.warn(
-          JSON.stringify({
-            event: 'USER ALREADY EXISTS',
-            email: registerUser.email,
-          }),
-        );
         throw new ConflictException('User already exists');
       }
 
       // 2. Hash password
       const hashedPassword = await bcrypt.hash(registerUser.password, 10);
-      this.logger.log(
-        JSON.stringify({
-          event: 'PASSWORD HASHED',
-          email: registerUser.email,
-        }),
-      );
       const user = {
         ...registerUser,
         password: hashedPassword,
       };
 
       // 3. Save user
-      await this.userService.create(user);
-      this.logger.log(
-        JSON.stringify({
-          event: 'USER CREATED SUCCESSFULLY',
-          email: registerUser.email,
-        }),
-      );
+      const createdUser = await this.userService.createUser(user);
       // 4. Generate token
-      const payload = {
-        sub: registerUser.email,
-        role: user.role,
+      const payload: tokenPayload = {
+        sub: createdUser?._id.toString(),
+        role: createdUser?.role,
       };
 
       const accessToken = await this.generateJwtToken(payload);
       res.cookie('accessToken', accessToken);
-      this.logger.log(
-        JSON.stringify({
-          event: 'TOKEN SENT IN COOKIE',
-          email: registerUser.email,
-          token: accessToken,
-        }),
-      );
       // 5. Return response
       return {
         message: 'User Registered Successfully',
@@ -125,23 +90,6 @@ export class AuthService {
           accessToken,
         },
       };
-    } catch (err: any) {
-      // Re-throw existing NestJS exceptions
-      if (err instanceof HttpException) {
-        throw err;
-      }
-
-      // Mongo duplicate key
-      if (err.code === 11000) {
-        const field = Object.keys(err.keyPattern)[0];
-
-        throw new ConflictException(`${field} already exists!`);
-      }
-
-      console.error(err);
-
-      throw new InternalServerErrorException('Something went wrong');
-    }
   }
 
   logout(res: Response) {
