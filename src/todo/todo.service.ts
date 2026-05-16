@@ -5,67 +5,66 @@ import { Todo } from './schema/todo.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserService } from '@/user/user.service';
+import { TodoRepository } from './todo.repository';
+import { tokenPayload } from '@/shared/interface/interface';
 
 @Injectable()
 export class TodoService {
   constructor(
     @InjectModel(Todo.name) private todoModel: Model<Todo>,
     private readonly userService: UserService,
+    private readonly todoRepository: TodoRepository,
   ) {}
-  async create(createTodoDto: CreateTodoDto, user: any) {
-    const exisitingUser = await this.userService.fetchUserByEmail(user.sub);
-    const todo = await this.todoModel.create({
+  async create(createTodoDto: CreateTodoDto, user: tokenPayload) {
+    const exisitingUser = await this.userService.fetchUserById(user);
+    const todo = await this.todoRepository.createTodo({
       ...createTodoDto,
       ownerId: exisitingUser?._id,
     });
     return {
       message: 'Todo Created Successfully',
-      data: todo?._id,
+      data: todo,
     };
   }
 
-  async findAll(user: any) {
-    const exisitingUser = await this.userService.fetchUserByEmail(user?.sub);
-    const todoList = await this.todoModel
-      .find({ ownerId: exisitingUser?._id })
-      .select('-__v')
-      .where({});
+  async fetchTodosById(user: tokenPayload) {
+    const exisitingUser = await this.userService.fetchUserById(user);
+    const todoList = await this.todoRepository.fetchTodosById(
+      exisitingUser?._id.toString(),
+    );
     return {
       message: 'Todo List Found Successfully',
       data: todoList,
     };
   }
 
-  async findOne(id: string) {
-    const todo = await this.todoModel.findOne({ _id: id }).select('-__v');
+  async fetchTodoById(id: string, user: tokenPayload) {
+    const todo = await this.todoRepository.fetchTodoById(id, user?.sub);
     if (!todo) {
       throw new NotFoundException('No Todo Found');
     }
     return {
+      message: 'Todo Fetched Successfully',
       data: todo,
-      message: 'Todo Found Successfully',
     };
   }
 
-  async update(id: string, updateTodoDto: UpdateTodoDto, user: any) {
-    const existingTodo = await this.findOne(id);
-    await this.userService.fetchUserByEmail(user?.sub);
-    await this.todoModel.findByIdAndUpdate(
-      existingTodo?.data?._id,
+  async update(id: string, updateTodoDto: UpdateTodoDto, user: tokenPayload) {
+    const existingTodo = await this.fetchTodoById(id, user);
+    const updatedTodo = await this.todoRepository.updateTodoById(
+      existingTodo,
+      user?.sub,
       updateTodoDto,
     );
     return {
       message: 'Todo Updated Successfully',
+      data: updatedTodo,
     };
   }
 
-  async remove(id: string, user: any) {
-    const exisitingUser = await this.userService.fetchUserByEmail(user?.sub);
-    const existingTodo = await this.findOne(id);
-    await this.todoModel.findOneAndDelete({
-      _id: existingTodo?.data?._id,
-      ownerId: exisitingUser?._id,
-    });
+  async remove(id: string, user: tokenPayload) {
+    const existingTodo = await this.fetchTodoById(id, user);
+    await this.todoRepository.deleteTodoById(existingTodo,user?.sub);
     return {
       data: 'Todo Removed Successfully',
     };

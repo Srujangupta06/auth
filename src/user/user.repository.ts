@@ -44,7 +44,7 @@ export class UserRepository {
         },
         incomingData,
         {
-          new: true,
+          returnDocument: 'after',
         },
       )
       .select('-__v');
@@ -52,7 +52,10 @@ export class UserRepository {
   }
 
   // UPDATE USER ACCOUNT STATUS [ACTIVE,IN-ACTIVE]
-  async updateUserAccountStatus(accountStatus: userAccountStatus, userId: string) {
+  async updateUserAccountStatus(
+    accountStatus: userAccountStatus,
+    userId: string,
+  ) {
     const updatedUser = await this.userModel
       .findOneAndUpdate(
         {
@@ -60,7 +63,7 @@ export class UserRepository {
         },
         { accountStatus },
         {
-          new: true,
+          returnDocument: 'after',
         },
       )
       .select('-__v');

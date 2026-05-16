@@ -34,7 +34,7 @@ export class RegisterUserDto {
   role: userRole = userRole.USER;
 
   @IsEnum(userAccountStatus,{
-    message:'Invalid Account Status'
+    message:'Account Status must have any one of them: active, inactive'
   })
   accountStatus: userAccountStatus = userAccountStatus.ACTIVE
 }
