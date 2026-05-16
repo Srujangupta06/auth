@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
@@ -16,6 +17,7 @@ import { UpdateTodoDto } from './dto/update-todo.dto';
 import { AuthGuard } from '@/auth/guard/auth.guard';
 import { CurrentUser } from '@/shared/decorator/current-user.decorator';
 import { tokenPayload } from '@/shared/interface/interface';
+import { FetchTodoQueryDto } from './dto/fetch-todo.dto';
 
 @UseGuards(AuthGuard)
 @Controller({
@@ -34,8 +36,11 @@ export class TodoController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: tokenPayload) {
-    return this.todoService.fetchTodosById(user);
+  findAll(
+    @Query() query: FetchTodoQueryDto,
+    @CurrentUser() user: tokenPayload,
+  ) {
+    return this.todoService.fetchTodosById(user,query);
   }
 
   @Get(':id')

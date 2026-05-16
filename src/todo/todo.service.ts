@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { UserService } from '@/user/user.service';
 import { TodoRepository } from './todo.repository';
 import { tokenPayload } from '@/shared/interface/interface';
+import { FetchTodoQueryDto } from './dto/fetch-todo.dto';
 
 @Injectable()
 export class TodoService {
@@ -27,13 +28,14 @@ export class TodoService {
     };
   }
 
-  async fetchTodosById(user: tokenPayload) {
+  async fetchTodosById(user: tokenPayload,query:FetchTodoQueryDto) {
     const exisitingUser = await this.userService.fetchUserById(user);
     const todoList = await this.todoRepository.fetchTodosById(
       exisitingUser?._id.toString(),
+      query,
     );
     return {
-      message: 'Todo List Found Successfully',
+      message: 'Todo List Fetched Successfully',
       data: todoList,
     };
   }

@@ -22,8 +22,55 @@ export class TodoRepository {
   }
 
   //  FETCH ALL TODOS
-  async fetchTodosById(userId: string) {
-    return await this.todoModel.find({ ownerId: userId }).select('-__v');
+  async fetchTodosById(userId: string, query: any) {
+    const filterQuery: any = {
+      ownerId: userId,
+    };
+
+    const sortQuery: any = {
+      createdAt: 1,
+    };
+
+    if (query.status) {
+      filterQuery.status = query.status;
+    }
+
+    if (query.priority) {
+      filterQuery.priority = query.priority;
+    }
+
+    if (query.search) {
+      filterQuery.title = {
+        $regex: query.search,
+        $options: 'i',
+      };
+    }
+
+    if (query.sortBy) {
+      sortQuery[query.sortBy] = query.sortOrder === 'asc' ? 1 : -1;
+    }
+
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const todos = await this.todoModel
+      .find(filterQuery)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(limit)
+      .select('-__v');
+
+    const totalTodos = await this.todoModel.countDocuments(filterQuery);
+    return {
+      todos,
+      pagination: {
+        total: totalTodos,
+        page,
+        limit,
+        totalPages: Math.ceil(totalTodos / limit),
+      },
+    };
   }
 
   //  FETCH SINGLE TODO
